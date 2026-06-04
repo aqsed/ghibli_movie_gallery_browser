@@ -1,0 +1,71 @@
+import 'package:ghibli_movie_gallery_browser/movie/api/ghibli_api_connector.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/dto/movie_dto.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
+import 'package:ghibli_movie_gallery_browser/user_data/model/user_movie_data.dart';
+import 'package:ghibli_movie_gallery_browser/user_data/user_movie_data_repository.dart';
+
+class MovieRepository {
+  final GhibliApiConnector _apiConnector;
+
+  final UserMovieDataRepository _userDataRepository;
+
+  const MovieRepository(this._apiConnector, this._userDataRepository);
+
+  Future<List<MovieListItem>> getMovies() async {
+    final (movies, userMovieData) = await (_apiConnector.getMovies(), _userDataRepository.getMovieData()).wait;
+
+    return movies.map((movie) => _buildMovieListItem(movie, userMovieData[movie.id])).toList();
+  }
+
+  Future<MovieDetails> getMovieDetails({required String movieId}) async {
+    final (movie, userMovieData) = await (
+      _apiConnector.getMovie(movieId: movieId),
+      _userDataRepository.getMovieData(),
+    ).wait;
+
+    final movieUserData = userMovieData[movieId];
+
+    final (people, species, locations, vehicles) = await (
+      Future.wait(_detailUrls(movie.peopleUrls).map((url) => _apiConnector.getPerson(url: url))),
+      Future.wait(_detailUrls(movie.speciesUrls).map((url) => _apiConnector.getSpecies(url: url))),
+      Future.wait(_detailUrls(movie.locationUrls).map((url) => _apiConnector.getLocation(url: url))),
+      Future.wait(_detailUrls(movie.vehicleUrls).map((url) => _apiConnector.getVehicle(url: url))),
+    ).wait;
+
+    return MovieDetails(
+      movie: movie,
+      people: people,
+      species: species,
+      locations: locations,
+      vehicles: vehicles,
+      isFavorite: movieUserData?.isFavorite ?? false,
+      userRating: movieUserData?.userRating,
+    );
+  }
+
+  Future<void> setFavorite({required String movieId, required bool isFavorite}) {
+    return _userDataRepository.setFavorite(movieId: movieId, isFavorite: isFavorite);
+  }
+
+  Future<void> setUserRating({required String movieId, required int? userRating}) {
+    return _userDataRepository.setUserRating(movieId: movieId, userRating: userRating);
+  }
+
+  MovieListItem _buildMovieListItem(MovieDto movie, UserMovieData? userMovieData) {
+    return MovieListItem(
+      id: movie.id,
+      title: movie.title,
+      image: movie.image,
+      description: movie.description,
+      releaseDate: movie.releaseDate,
+      rottenTomatoesRating: movie.rottenTomatoesRating,
+      isFavorite: userMovieData?.isFavorite ?? false,
+      userRating: userMovieData?.userRating,
+    );
+  }
+
+  Iterable<String> _detailUrls(List<String> urls) {
+    return urls.where((url) => Uri.parse(url).pathSegments.length > 1);
+  }
+}
