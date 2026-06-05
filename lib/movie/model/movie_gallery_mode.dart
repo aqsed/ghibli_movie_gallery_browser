@@ -1,0 +1,1 @@
+enum MovieGalleryMode { all, favorites }

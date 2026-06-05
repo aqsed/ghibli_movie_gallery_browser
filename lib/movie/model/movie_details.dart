@@ -28,4 +28,16 @@ class MovieDetails {
     required this.isFavorite,
     required this.userRating,
   });
+
+  MovieDetails copyWith({required bool isFavorite, required int? userRating}) {
+    return MovieDetails(
+      movie: movie,
+      people: people,
+      species: species,
+      locations: locations,
+      vehicles: vehicles,
+      isFavorite: isFavorite,
+      userRating: userRating,
+    );
+  }
 }
