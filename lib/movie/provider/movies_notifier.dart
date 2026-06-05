@@ -15,19 +15,23 @@ class MoviesNotifier extends AsyncNotifier<List<MovieListItem>> {
 
   Future<void> setFavorite({required String movieId, required bool isFavorite}) async {
     await ref.read(movieRepositoryProvider).setFavorite(movieId: movieId, isFavorite: isFavorite);
-    final movies = state.requireValue;
 
-    state = AsyncData(
-      movies.map((movie) => movie.id == movieId ? movie.copyWith(isFavorite: isFavorite) : movie).toList(),
-    );
+    _replaceUserData(movieId, (movie) => movie.withUserData(isFavorite: isFavorite, userRating: movie.userRating));
   }
 
   Future<void> setUserRating({required String movieId, required int? userRating}) async {
     await ref.read(movieRepositoryProvider).setUserRating(movieId: movieId, userRating: userRating);
-    final movies = state.requireValue;
 
-    state = AsyncData(
-      movies.map((movie) => movie.id == movieId ? movie.copyWith(userRating: userRating) : movie).toList(),
-    );
+    _replaceUserData(movieId, (movie) => movie.withUserData(isFavorite: movie.isFavorite, userRating: userRating));
+  }
+
+  void _replaceUserData(String movieId, MovieListItem Function(MovieListItem movie) update) {
+    final currentMovies = state.value;
+
+    if (currentMovies == null) {
+      return;
+    }
+
+    state = AsyncData(currentMovies.map((movie) => movie.id == movieId ? update(movie) : movie).toList());
   }
 }

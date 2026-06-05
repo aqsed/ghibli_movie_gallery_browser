@@ -28,7 +28,7 @@ class UserMovieDataRepository {
     final movieData = await getMovieData();
     final current = movieData[movieId] ?? const UserMovieData(isFavorite: false, userRating: null);
 
-    movieData[movieId] = current.copyWith(isFavorite: isFavorite);
+    movieData[movieId] = UserMovieData(isFavorite: isFavorite, userRating: current.userRating);
 
     await _save(movieData);
   }
@@ -37,7 +37,7 @@ class UserMovieDataRepository {
     final movieData = await getMovieData();
     final current = movieData[movieId] ?? const UserMovieData(isFavorite: false, userRating: null);
 
-    movieData[movieId] = current.copyWith(userRating: userRating);
+    movieData[movieId] = UserMovieData(isFavorite: current.isFavorite, userRating: userRating);
 
     await _save(movieData);
   }

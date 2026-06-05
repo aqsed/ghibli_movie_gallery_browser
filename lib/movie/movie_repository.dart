@@ -7,7 +7,6 @@ import 'package:ghibli_movie_gallery_browser/user_data/user_movie_data_repositor
 
 class MovieRepository {
   final GhibliApiConnector _apiConnector;
-
   final UserMovieDataRepository _userDataRepository;
 
   const MovieRepository(this._apiConnector, this._userDataRepository);
@@ -27,10 +26,12 @@ class MovieRepository {
     final movieUserData = userMovieData[movieId];
 
     final (people, species, locations, vehicles) = await (
-      Future.wait(_detailUrls(movie.peopleUrls).map((url) => _apiConnector.getPerson(url: url))),
-      Future.wait(_detailUrls(movie.speciesUrls).map((url) => _apiConnector.getSpecies(url: url))),
-      Future.wait(_detailUrls(movie.locationUrls).map((url) => _apiConnector.getLocation(url: url))),
-      Future.wait(_detailUrls(movie.vehicleUrls).map((url) => _apiConnector.getVehicle(url: url))),
+      Future.wait(_getFilteredRelevantDetailsUrls(movie.peopleUrls).map((url) => _apiConnector.getPerson(url: url))),
+      Future.wait(_getFilteredRelevantDetailsUrls(movie.speciesUrls).map((url) => _apiConnector.getSpecies(url: url))),
+      Future.wait(
+        _getFilteredRelevantDetailsUrls(movie.locationUrls).map((url) => _apiConnector.getLocation(url: url)),
+      ),
+      Future.wait(_getFilteredRelevantDetailsUrls(movie.vehicleUrls).map((url) => _apiConnector.getVehicle(url: url))),
     ).wait;
 
     return MovieDetails(
@@ -59,13 +60,14 @@ class MovieRepository {
       image: movie.image,
       description: movie.description,
       releaseDate: movie.releaseDate,
+      runningTime: movie.runningTime,
       rottenTomatoesRating: movie.rottenTomatoesRating,
       isFavorite: userMovieData?.isFavorite ?? false,
       userRating: userMovieData?.userRating,
     );
   }
 
-  Iterable<String> _detailUrls(List<String> urls) {
-    return urls.where((url) => Uri.parse(url).pathSegments.length > 1);
+  Iterable<String> _getFilteredRelevantDetailsUrls(List<String> urls) {
+    return urls.where((url) => Uri.parse(url).pathSegments.where((segment) => segment.isNotEmpty).length > 1);
   }
 }
