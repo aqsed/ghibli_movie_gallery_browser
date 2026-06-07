@@ -71,6 +71,11 @@ These are choices made on top of the bare requirement:
 - **State management — Riverpod (`flutter_riverpod` 3.x).** All app state, data
   fetching and dependency wiring go through providers. `StreamProvider` /
   `StreamProvider.autoDispose.family` drive the reactive UI.
+- **Dependency injection — Riverpod as the composition root.** The data/domain
+  layer (`GhibliApiConnector`, `MovieRepository`, `UserMovieDataRepository`) uses
+  plain **constructor injection** so each class is testable in isolation. The `provider/` files are the only place that knows how
+  to build the graph and push instances in. The one instance locator is 
+  `ref.read(...)`.
 - **Networking — Dio.** Configured once in `dioProvider` with base URL and
   10s timeouts, plus a `LogInterceptor` for development visibility.
 - **Local persistence — SharedPreferences.** Favorites and personal ratings are
@@ -93,7 +98,6 @@ These are choices made on top of the bare requirement:
   - Rotten Tomatoes score display, "film facts" card, expandable world-detail
     sections, collapsing banner app bar.
   - Loading, error (with retry) and graceful image-fallback states.
-  - 
 ## Known shortcuts / things done sub-optimally (for context)
 - **No tests.** 
   The repository/connector layers are written to be testable (constructor
