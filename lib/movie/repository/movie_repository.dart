@@ -3,7 +3,7 @@ import 'package:ghibli_movie_gallery_browser/movie/model/dto/movie_dto.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
 import 'package:ghibli_movie_gallery_browser/user_data/model/user_movie_data.dart';
-import 'package:ghibli_movie_gallery_browser/user_data/user_movie_data_repository.dart';
+import 'package:ghibli_movie_gallery_browser/user_data/repository/user_movie_data_repository.dart';
 
 class MovieRepository {
   final GhibliApiConnector _apiConnector;
@@ -11,19 +11,16 @@ class MovieRepository {
 
   const MovieRepository(this._apiConnector, this._userDataRepository);
 
-  Future<List<MovieListItem>> getMovies() async {
-    final (movies, userMovieData) = await (_apiConnector.getMovies(), _userDataRepository.getMovieData()).wait;
+  Stream<List<MovieListItem>> watchMovies() async* {
+    final movies = await _apiConnector.getMovies();
 
-    return movies.map((movie) => _buildMovieListItem(movie, userMovieData[movie.id])).toList();
+    yield* _userDataRepository.watchUserMovies().map(
+      (userData) => movies.map((movie) => _buildMovieListItem(movie, userData[movie.id])).toList(),
+    );
   }
 
-  Future<MovieDetails> getMovieDetails({required String movieId}) async {
-    final (movie, userMovieData) = await (
-      _apiConnector.getMovie(movieId: movieId),
-      _userDataRepository.getMovieData(),
-    ).wait;
-
-    final movieUserData = userMovieData[movieId];
+  Stream<MovieDetails> watchMovieDetails({required String movieId}) async* {
+    final movie = await _apiConnector.getMovie(movieId: movieId);
 
     final (people, species, locations, vehicles) = await (
       Future.wait(_getFilteredRelevantDetailsUrls(movie.peopleUrls).map((url) => _apiConnector.getPerson(url: url))),
@@ -34,15 +31,19 @@ class MovieRepository {
       Future.wait(_getFilteredRelevantDetailsUrls(movie.vehicleUrls).map((url) => _apiConnector.getVehicle(url: url))),
     ).wait;
 
-    return MovieDetails(
-      movie: movie,
-      people: people,
-      species: species,
-      locations: locations,
-      vehicles: vehicles,
-      isFavorite: movieUserData?.isFavorite ?? false,
-      userRating: movieUserData?.userRating,
-    );
+    yield* _userDataRepository.watchUserMovies().map((userData) {
+      final movieUserData = userData[movieId];
+
+      return MovieDetails(
+        movie: movie,
+        people: people,
+        species: species,
+        locations: locations,
+        vehicles: vehicles,
+        isFavorite: movieUserData?.isFavorite ?? false,
+        userRating: movieUserData?.userRating,
+      );
+    });
   }
 
   Future<void> setFavorite({required String movieId, required bool isFavorite}) {

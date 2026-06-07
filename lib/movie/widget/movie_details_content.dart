@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ghibli_movie_gallery_browser/core/extension/time_format_string_extension.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/dto/movie_dto.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
-import 'package:ghibli_movie_gallery_browser/movie/util/movie_format.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/expandable_record_section.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/favorite_button.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/labelled_value.dart';
@@ -10,7 +10,7 @@ import 'package:ghibli_movie_gallery_browser/movie/widget/rotten_tomatoes_score_
 
 const _EXPANDED_HEIGHT = 330.0;
 
-class MovieDetailsContent extends StatefulWidget {
+class MovieDetailsContent extends StatelessWidget {
   final MovieDetails details;
   final ValueChanged<bool> onFavoriteChanged;
   final ValueChanged<int?> onRatingChanged;
@@ -23,16 +23,9 @@ class MovieDetailsContent extends StatefulWidget {
   });
 
   @override
-  State<MovieDetailsContent> createState() => _MovieDetailsContentState();
-}
-
-class _MovieDetailsContentState extends State<MovieDetailsContent> {
-  var _isCollapsed = false;
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final movie = widget.details.movie;
+    final movie = details.movie;
 
     return CustomScrollView(
       slivers: [
@@ -54,7 +47,7 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
                     const SizedBox(height: 22),
                     Text(movie.description, style: theme.textTheme.bodyLarge),
                     const SizedBox(height: 28),
-                    _buildFactsCard(movie),
+                    _buildFactsCard(theme, movie),
                     const SizedBox(height: 28),
                     Text('World details', style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 12),
@@ -76,17 +69,13 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
   }
 
   Widget _buildHeader(ThemeData theme, MovieDto movie) {
-    final iconColor = _isCollapsed ? theme.colorScheme.onSurface : Colors.white;
-
     return SliverAppBar(
       pinned: true,
       expandedHeight: _EXPANDED_HEIGHT,
-      iconTheme: IconThemeData(color: iconColor),
-      title: _isCollapsed ? Text(movie.title) : null,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: FavoriteButton(isFavorite: widget.details.isFavorite, onChanged: widget.onFavoriteChanged),
+          child: FavoriteButton(isFavorite: details.isFavorite, onChanged: onFavoriteChanged),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -153,19 +142,18 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
       children: [
         Text('Your rating', style: theme.textTheme.labelLarge),
         const SizedBox(width: 8),
-        MovieRatingStars(rating: widget.details.userRating, onChanged: widget.onRatingChanged, iconSize: 28),
+        MovieRatingStars(rating: details.userRating, onChanged: onRatingChanged, iconSize: 28),
       ],
     );
   }
 
-  Widget _buildFactsCard(MovieDto movie) {
-    final theme = Theme.of(context);
+  Widget _buildFactsCard(ThemeData theme, MovieDto movie) {
     final facts = <LabelledFact>[
       ('Original title', movie.originalTitleRomanised),
       ('Director', movie.director),
       ('Producer', movie.producer),
       ('Release date', movie.releaseDate),
-      ('Running time', formatRunningTime(movie.runningTime)),
+      ('Running time', movie.runningTime.formatMinutesToHourAndMinute()),
     ];
 
     return DecoratedBox(
@@ -216,7 +204,7 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
       title: 'People',
       icon: Icons.groups_rounded,
       emptyText: 'No people are listed for this film.',
-      records: widget.details.people
+      records: details.people
           .map(
             (person) => (
               title: person.name,
@@ -238,7 +226,7 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
       title: 'Species',
       icon: Icons.pets_rounded,
       emptyText: 'No species are listed for this film.',
-      records: widget.details.species
+      records: details.species
           .map(
             (item) => (
               title: item.name,
@@ -259,7 +247,7 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
       title: 'Locations',
       icon: Icons.map_rounded,
       emptyText: 'No locations are listed for this film.',
-      records: widget.details.locations
+      records: details.locations
           .map(
             (location) => (
               title: location.name,
@@ -280,7 +268,7 @@ class _MovieDetailsContentState extends State<MovieDetailsContent> {
       title: 'Vehicles',
       icon: Icons.directions_car_rounded,
       emptyText: 'No vehicles are listed for this film.',
-      records: widget.details.vehicles
+      records: details.vehicles
           .map(
             (vehicle) => (
               title: vehicle.name,

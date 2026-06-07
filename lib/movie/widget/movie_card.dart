@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ghibli_movie_gallery_browser/core/extension/time_format_string_extension.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
-import 'package:ghibli_movie_gallery_browser/movie/util/movie_format.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/favorite_button.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_rating_stars.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/rotten_tomatoes_score_container.dart';
@@ -130,6 +130,6 @@ class MovieCard extends StatelessWidget {
       return movie.releaseDate;
     }
 
-    return '${movie.releaseDate}  ·  ${formatRunningTime(movie.runningTime)}';
+    return '${movie.releaseDate}  ·  ${movie.runningTime.formatMinutesToHourAndMinute()}';
   }
 }

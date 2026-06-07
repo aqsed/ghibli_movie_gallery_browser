@@ -29,15 +29,24 @@ class MovieDetails {
     required this.userRating,
   });
 
-  MovieDetails copyWith({required bool isFavorite, required int? userRating}) {
+  MovieDetails copyWith({
+    MovieDto? movie,
+    List<PersonDto>? people,
+    List<SpeciesDto>? species,
+    List<LocationDto>? locations,
+    List<VehicleDto>? vehicles,
+    bool? isFavorite,
+    int? userRating,
+    bool useUserRatingNullable = false,
+  }) {
     return MovieDetails(
-      movie: movie,
-      people: people,
-      species: species,
-      locations: locations,
-      vehicles: vehicles,
-      isFavorite: isFavorite,
-      userRating: userRating,
+      movie: movie ?? this.movie,
+      people: people ?? this.people,
+      species: species ?? this.species,
+      locations: locations ?? this.locations,
+      vehicles: vehicles ?? this.vehicles,
+      isFavorite: isFavorite ?? this.isFavorite,
+      userRating: useUserRatingNullable ? userRating : (userRating ?? this.userRating),
     );
   }
 }

@@ -28,18 +28,4 @@ class MovieListItem {
     required this.isFavorite,
     required this.userRating,
   });
-
-  MovieListItem withUserData({required bool isFavorite, required int? userRating}) {
-    return MovieListItem(
-      id: id,
-      title: title,
-      image: image,
-      description: description,
-      releaseDate: releaseDate,
-      runningTime: runningTime,
-      rottenTomatoesRating: rottenTomatoesRating,
-      isFavorite: isFavorite,
-      userRating: userRating,
-    );
-  }
 }

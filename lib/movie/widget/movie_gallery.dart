@@ -56,7 +56,7 @@ class MovieGallery extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 1180),
                   child: LayoutBuilder(
                     builder: (context, constraints) =>
-                        _buildMovieCardsLayout(movies, _cardWidthFor(constraints.maxWidth)),
+                        _buildMovieCardsLayout(visibleMovies, _cardWidthFor(constraints.maxWidth)),
                   ),
                 ),
               ),

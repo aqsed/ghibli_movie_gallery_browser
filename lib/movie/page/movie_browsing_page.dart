@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_gallery_mode.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
 import 'package:ghibli_movie_gallery_browser/movie/page/movie_detail_page.dart';
-import 'package:ghibli_movie_gallery_browser/movie/provider/movies_notifier.dart';
+import 'package:ghibli_movie_gallery_browser/movie/provider/movie_repository_provider.dart';
+import 'package:ghibli_movie_gallery_browser/movie/provider/movies_provider.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_error_view.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_gallery.dart';
 
@@ -28,7 +29,7 @@ class _MovieBrowsingPageState extends ConsumerState<MovieBrowsingPage> {
         child: movies.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) {
-            return MovieErrorView(error: error, onRetry: () => ref.read(moviesProvider.notifier).refresh());
+            return MovieErrorView(error: error, onRetry: () => ref.invalidate(moviesProvider));
           },
           data: (movies) => MovieGallery(
             movies: movies,
@@ -50,10 +51,10 @@ class _MovieBrowsingPageState extends ConsumerState<MovieBrowsingPage> {
   }
 
   Future<void> _setFavorite(MovieListItem movie, bool isFavorite) {
-    return ref.read(moviesProvider.notifier).setFavorite(movieId: movie.id, isFavorite: isFavorite);
+    return ref.read(movieRepositoryProvider).setFavorite(movieId: movie.id, isFavorite: isFavorite);
   }
 
   Future<void> _setUserRating(MovieListItem movie, int? userRating) {
-    return ref.read(moviesProvider.notifier).setUserRating(movieId: movie.id, userRating: userRating);
+    return ref.read(movieRepositoryProvider).setUserRating(movieId: movie.id, userRating: userRating);
   }
 }
