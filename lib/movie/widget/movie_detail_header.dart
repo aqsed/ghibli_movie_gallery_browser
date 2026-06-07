@@ -7,6 +7,7 @@ class MovieDetailHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
   final List<Widget> actions;
+  final String? heroTag;
 
   const MovieDetailHeader({
     super.key,
@@ -14,6 +15,7 @@ class MovieDetailHeader extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.actions = const [],
+    this.heroTag,
   });
 
   @override
@@ -23,19 +25,13 @@ class MovieDetailHeader extends StatelessWidget {
     return SliverAppBar(
       pinned: true,
       expandedHeight: _EXPANDED_HEIGHT,
+      foregroundColor: Colors.white,
       actions: actions,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => ColoredBox(
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Icon(Icons.movie_rounded, size: 54, color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
+            _buildBannerImage(theme),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -80,5 +76,18 @@ class MovieDetailHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildBannerImage(ThemeData theme) {
+    final image = Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => ColoredBox(
+        color: theme.colorScheme.surfaceContainerHighest,
+        child: Icon(Icons.movie_rounded, size: 54, color: theme.colorScheme.onSurfaceVariant),
+      ),
+    );
+
+    return heroTag == null ? image : Hero(tag: heroTag!, child: image);
   }
 }

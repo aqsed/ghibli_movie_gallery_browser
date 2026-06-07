@@ -78,6 +78,7 @@ class MovieDetailsContent extends StatelessWidget {
       imageUrl: movie.movieBanner.isEmpty ? movie.image : movie.movieBanner,
       title: movie.title,
       subtitle: movie.originalTitleRomanised,
+      heroTag: movie.id,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),

@@ -113,7 +113,7 @@ class MovieCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Hero(
-      tag: 'movie-image-${movie.id}',
+      tag: movie.id,
       child: Image.network(
         movie.image,
         fit: BoxFit.cover,
