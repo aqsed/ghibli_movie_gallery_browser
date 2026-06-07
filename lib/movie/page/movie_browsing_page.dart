@@ -47,7 +47,7 @@ class _MovieBrowsingPageState extends ConsumerState<MovieBrowsingPage> {
   }
 
   void _openMovie(MovieListItem movie) {
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (context) => MovieDetailPage(movieId: movie.id)));
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (context) => MovieDetailPage(movie: movie)));
   }
 
   Future<void> _setFavorite(MovieListItem movie, bool isFavorite) {

@@ -1,32 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
 import 'package:ghibli_movie_gallery_browser/movie/provider/movie_details_provider.dart';
 import 'package:ghibli_movie_gallery_browser/movie/provider/movie_repository_provider.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_details_content.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_error_view.dart';
 
 class MovieDetailPage extends ConsumerWidget {
-  final String movieId;
+  final MovieListItem movie;
 
-  const MovieDetailPage({super.key, required this.movieId});
+  const MovieDetailPage({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final movieDetails = ref.watch(movieDetailsProvider(movieId));
+    final movieDetails = ref.watch(movieDetailsProvider(movie.id));
     final repository = ref.read(movieRepositoryProvider);
 
     return Scaffold(
       body: movieDetails.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => MovieDetailsContent(
+          details: MovieDetails.preview(movie),
+          isWorldDetailsLoading: true,
+          onFavoriteChanged: (isFavorite) => repository.setFavorite(movieId: movie.id, isFavorite: isFavorite),
+          onRatingChanged: (rating) => repository.setUserRating(movieId: movie.id, userRating: rating),
+        ),
         error: (error, stackTrace) => MovieErrorView(
           title: 'Could not load movie detail',
           error: error,
-          onRetry: () => ref.invalidate(movieDetailsProvider(movieId)),
+          onRetry: () => ref.invalidate(movieDetailsProvider(movie.id)),
         ),
         data: (details) => MovieDetailsContent(
           details: details,
-          onFavoriteChanged: (isFavorite) => repository.setFavorite(movieId: movieId, isFavorite: isFavorite),
-          onRatingChanged: (rating) => repository.setUserRating(movieId: movieId, userRating: rating),
+          onFavoriteChanged: (isFavorite) => repository.setFavorite(movieId: movie.id, isFavorite: isFavorite),
+          onRatingChanged: (rating) => repository.setUserRating(movieId: movie.id, userRating: rating),
         ),
       ),
     );

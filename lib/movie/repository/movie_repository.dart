@@ -58,8 +58,12 @@ class MovieRepository {
     return MovieListItem(
       id: movie.id,
       title: movie.title,
+      originalTitleRomanised: movie.originalTitleRomanised,
       image: movie.image,
+      movieBanner: movie.movieBanner,
       description: movie.description,
+      director: movie.director,
+      producer: movie.producer,
       releaseDate: movie.releaseDate,
       runningTime: movie.runningTime,
       rottenTomatoesRating: movie.rottenTomatoesRating,

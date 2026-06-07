@@ -5,21 +5,22 @@ import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/expandable_record_section.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/favorite_button.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/labelled_value.dart';
+import 'package:ghibli_movie_gallery_browser/movie/widget/movie_detail_header.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/movie_rating_stars.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/rotten_tomatoes_score_container.dart';
-
-const _EXPANDED_HEIGHT = 330.0;
 
 class MovieDetailsContent extends StatelessWidget {
   final MovieDetails details;
   final ValueChanged<bool> onFavoriteChanged;
   final ValueChanged<int?> onRatingChanged;
+  final bool isWorldDetailsLoading;
 
   const MovieDetailsContent({
     super.key,
     required this.details,
     required this.onFavoriteChanged,
     required this.onRatingChanged,
+    this.isWorldDetailsLoading = false,
   });
 
   @override
@@ -29,7 +30,7 @@ class MovieDetailsContent extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        _buildHeader(theme, movie),
+        _buildHeader(movie),
         SliverToBoxAdapter(
           child: Center(
             child: ConstrainedBox(
@@ -51,13 +52,17 @@ class MovieDetailsContent extends StatelessWidget {
                     const SizedBox(height: 28),
                     Text('World details', style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 12),
-                    _buildPeopleSection(),
-                    const SizedBox(height: 10),
-                    _buildSpeciesSection(),
-                    const SizedBox(height: 10),
-                    _buildLocationsSection(),
-                    const SizedBox(height: 10),
-                    _buildVehiclesSection(),
+                    if (isWorldDetailsLoading)
+                      const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
+                    else ...[
+                      _buildPeopleSection(),
+                      const SizedBox(height: 10),
+                      _buildSpeciesSection(),
+                      const SizedBox(height: 10),
+                      _buildLocationsSection(),
+                      const SizedBox(height: 10),
+                      _buildVehiclesSection(),
+                    ],
                   ],
                 ),
               ),
@@ -68,71 +73,17 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(ThemeData theme, MovieDto movie) {
-    return SliverAppBar(
-      pinned: true,
-      expandedHeight: _EXPANDED_HEIGHT,
+  Widget _buildHeader(MovieDto movie) {
+    return MovieDetailHeader(
+      imageUrl: movie.movieBanner.isEmpty ? movie.image : movie.movieBanner,
+      title: movie.title,
+      subtitle: movie.originalTitleRomanised,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: FavoriteButton(isFavorite: details.isFavorite, onChanged: onFavoriteChanged),
         ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.network(
-              movie.movieBanner.isEmpty ? movie.image : movie.movieBanner,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => ColoredBox(
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Icon(Icons.movie_rounded, size: 54, color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.72)],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 24,
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      movie.title,
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        shadows: const [Shadow(offset: Offset(0, 1), blurRadius: 10)],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (movie.originalTitleRomanised.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        movie.originalTitleRomanised,
-                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.86)),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
