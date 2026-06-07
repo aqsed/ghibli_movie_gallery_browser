@@ -35,7 +35,6 @@ class MovieRepository {
       final movieUserData = userData[movieId];
 
       return MovieDetails(
-        movie: movie,
         people: people,
         species: species,
         locations: locations,

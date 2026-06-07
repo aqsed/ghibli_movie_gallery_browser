@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ghibli_movie_gallery_browser/core/extension/time_format_string_extension.dart';
-import 'package:ghibli_movie_gallery_browser/movie/model/dto/movie_dto.dart';
 import 'package:ghibli_movie_gallery_browser/movie/model/movie_details.dart';
+import 'package:ghibli_movie_gallery_browser/movie/model/movie_list_item.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/expandable_record_section.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/favorite_button.dart';
 import 'package:ghibli_movie_gallery_browser/movie/widget/labelled_value.dart';
@@ -10,27 +10,29 @@ import 'package:ghibli_movie_gallery_browser/movie/widget/movie_rating_stars.dar
 import 'package:ghibli_movie_gallery_browser/movie/widget/rotten_tomatoes_score_container.dart';
 
 class MovieDetailsContent extends StatelessWidget {
-  final MovieDetails details;
+  final MovieListItem movie;
+  final MovieDetails? details;
   final ValueChanged<bool> onFavoriteChanged;
   final ValueChanged<int?> onRatingChanged;
-  final bool isWorldDetailsLoading;
 
   const MovieDetailsContent({
     super.key,
+    required this.movie,
     required this.details,
     required this.onFavoriteChanged,
     required this.onRatingChanged,
-    this.isWorldDetailsLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final movie = details.movie;
+    final details = this.details;
+    final isFavorite = details?.isFavorite ?? movie.isFavorite;
+    final userRating = details?.userRating ?? movie.userRating;
 
     return CustomScrollView(
       slivers: [
-        _buildHeader(movie),
+        _buildHeader(isFavorite),
         SliverToBoxAdapter(
           child: Center(
             child: ConstrainedBox(
@@ -44,24 +46,24 @@ class MovieDetailsContent extends StatelessWidget {
                       RottenTomatoesScoreContainer(score: movie.rottenTomatoesRating),
                       const SizedBox(height: 16),
                     ],
-                    _buildRating(theme),
+                    _buildRating(theme, userRating),
                     const SizedBox(height: 22),
                     Text(movie.description, style: theme.textTheme.bodyLarge),
                     const SizedBox(height: 28),
-                    _buildFactsCard(theme, movie),
+                    _buildFactsCard(theme),
                     const SizedBox(height: 28),
                     Text('World details', style: theme.textTheme.headlineSmall),
                     const SizedBox(height: 12),
-                    if (isWorldDetailsLoading)
+                    if (details == null)
                       const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
                     else ...[
-                      _buildPeopleSection(),
+                      _buildPeopleSection(details),
                       const SizedBox(height: 10),
-                      _buildSpeciesSection(),
+                      _buildSpeciesSection(details),
                       const SizedBox(height: 10),
-                      _buildLocationsSection(),
+                      _buildLocationsSection(details),
                       const SizedBox(height: 10),
-                      _buildVehiclesSection(),
+                      _buildVehiclesSection(details),
                     ],
                   ],
                 ),
@@ -73,7 +75,7 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(MovieDto movie) {
+  Widget _buildHeader(bool isFavorite) {
     return MovieDetailHeader(
       imageUrl: movie.movieBanner.isEmpty ? movie.image : movie.movieBanner,
       title: movie.title,
@@ -82,24 +84,24 @@ class MovieDetailsContent extends StatelessWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: FavoriteButton(isFavorite: details.isFavorite, onChanged: onFavoriteChanged),
+          child: FavoriteButton(isFavorite: isFavorite, onChanged: onFavoriteChanged),
         ),
       ],
     );
   }
 
-  Widget _buildRating(ThemeData theme) {
+  Widget _buildRating(ThemeData theme, int? userRating) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text('Your rating', style: theme.textTheme.labelLarge),
         const SizedBox(width: 8),
-        MovieRatingStars(rating: details.userRating, onChanged: onRatingChanged, iconSize: 28),
+        MovieRatingStars(rating: userRating, onChanged: onRatingChanged, iconSize: 28),
       ],
     );
   }
 
-  Widget _buildFactsCard(ThemeData theme, MovieDto movie) {
+  Widget _buildFactsCard(ThemeData theme) {
     final facts = <LabelledFact>[
       ('Original title', movie.originalTitleRomanised),
       ('Director', movie.director),
@@ -151,7 +153,7 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildPeopleSection() {
+  Widget _buildPeopleSection(MovieDetails details) {
     return ExpandableRecordSection(
       title: 'People',
       icon: Icons.groups_rounded,
@@ -173,7 +175,7 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildSpeciesSection() {
+  Widget _buildSpeciesSection(MovieDetails details) {
     return ExpandableRecordSection(
       title: 'Species',
       icon: Icons.pets_rounded,
@@ -194,7 +196,7 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationsSection() {
+  Widget _buildLocationsSection(MovieDetails details) {
     return ExpandableRecordSection(
       title: 'Locations',
       icon: Icons.map_rounded,
@@ -215,7 +217,7 @@ class MovieDetailsContent extends StatelessWidget {
     );
   }
 
-  Widget _buildVehiclesSection() {
+  Widget _buildVehiclesSection(MovieDetails details) {
     return ExpandableRecordSection(
       title: 'Vehicles',
       icon: Icons.directions_car_rounded,
